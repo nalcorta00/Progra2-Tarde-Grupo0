@@ -65,6 +65,74 @@ Prioridad 90 (Alta): Embarazo en fase de parto inminente. Se prioriza el bienest
 
 Prioridad 1 (Baja): Paciente con herida leve (raspón). No presenta riesgo sistémico y puede esperar a que los casos críticos sean resueltos.
 
+package Implementacion;
+
+import Interfaces.ColaPrioridadTDA; // Asumiendo que tenés la interfaz
+
+public class GuardiaHospital implements ColaPrioridadTDA {
+
+    private static final int MAX = 100;
+    private int[] valores;      // El ID del paciente o dato
+    private int[] prioridades;  // La prioridad asociada
+    private int cantidad;
+
+    @Override
+    public void InicializarCola() {
+        valores = new int[MAX];
+        prioridades = new int[MAX];
+        cantidad = 0;
+    }
+
+    @Override
+    public void EncolarPrioridad(int dato, int prioridad) {
+        if (cantidad < MAX) {
+            int i = cantidad;
+            
+            // Buscamos el lugar: movemos a la derecha mientras la 
+            // prioridad nueva sea mayor a la de los que ya están.
+            // Esto deja al de MAYOR prioridad siempre en el índice 0.
+            while (i > 0 && prioridades[i - 1] < prioridad) {
+                prioridades[i] = prioridades[i - 1];
+                valores[i] = valores[i - 1];
+                i--;
+            }
+            
+            valores[i] = dato;
+            prioridades[i] = prioridad;
+            cantidad++;
+        }
+    }
+
+    @Override
+    public void Desencolar() {
+        if (!ColaVacia()) {
+            // Como el más importante ya está en 0, 
+            // solo corremos el resto a la izquierda (Estrategia 2).
+            for (int i = 0; i < cantidad - 1; i++) {
+                valores[i] = valores[i + 1];
+                prioridades[i] = prioridades[i + 1];
+            }
+            cantidad--;
+        }
+    }
+
+    @Override
+    public int Primero() {
+        // Gracias al ordenamiento al insertar, el de mayor prioridad es datos[0]
+        return valores[0];
+    }
+
+    @Override
+    public int Prioridad() {
+        return prioridades[0];
+    }
+
+    @Override
+    public boolean ColaVacia() {
+        return cantidad == 0;
+    }
+}
+
 Examen Final
 Se presenta una cola con prioridad donde los alumnos promocionados tienen precedencia sobre aquellos en condición de examen final. No obstante, se aplica una regla de puntualidad: si un alumno promocionado llega con 30 minutos de demora, pierde su beneficio jerárquico y es desencolado después de los estudiantes que se presentaron puntualmente, independientemente de su condición.
 
