@@ -220,6 +220,78 @@ Prioridad 999 (Urgencia Crítica): Asignada al fallo del servidor principal. Al 
 
 Prioridad 0 (Nivel Cosmético/Bajo): Asignada a solicitudes estéticas como el cambio de fondo de pantalla. Al no afectar la operatividad, este elemento permanece en la estructura y solo es procesado cuando la cola de prioridades superiores se encuentra vacía.
 
+package Implementacion;
 
+import Interfaces.ColaPrioridadTDA;
+
+public class GestionTicketsIT implements ColaPrioridadTDA {
+
+    private static final int MAX = 500; // Capacidad del sistema de tickets
+    private int[] idsTickets;
+    private int[] nivelesPrioridad;
+    private int cantidad;
+
+    // Definición explícita de valores según la consigna
+    private static final int PRIORIDAD_CRITICA = 999; // Servidor roto
+    private static final int PRIORIDAD_BAJA = 0;      // Fondo de pantalla
+
+    @Override
+    public void InicializarCola() {
+        idsTickets = new int[MAX];
+        nivelesPrioridad = new int[MAX];
+        cantidad = 0;
+    }
+
+    @Override
+    public void EncolarPrioridad(int idTicket, int prioridad) {
+        if (cantidad < MAX) {
+            int i = cantidad;
+
+            // Lógica de inserción ordenada:
+            // Desplazamos a la derecha mientras la prioridad del ticket nuevo 
+            // sea mayor que la de los que ya están en la cola.
+            while (i > 0 && nivelesPrioridad[i - 1] < prioridad) {
+                nivelesPrioridad[i] = nivelesPrioridad[i - 1];
+                idsTickets[i] = idsTickets[i - 1];
+                i--;
+            }
+
+            // El ticket del servidor (999) quedará en el índice 0, 
+            // desplazando al fondo de pantalla (0) al final.
+            idsTickets[i] = idTicket;
+            nivelesPrioridad[i] = prioridad;
+            cantidad++;
+        }
+    }
+
+    @Override
+    public void Desencolar() {
+        if (!ColaVacia()) {
+            // Estrategia 2: Extraemos el de mayor prioridad (servidor)
+            // y todos los tickets de fondo de pantalla avanzan un lugar.
+            for (int i = 0; i < cantidad - 1; i++) {
+                idsTickets[i] = idsTickets[i + 1];
+                nivelesPrioridad[i] = nivelesPrioridad[i + 1];
+            }
+            cantidad--;
+        }
+    }
+
+    @Override
+    public int Primero() {
+        // Devuelve el ID del ticket con prioridad 999 si existe, sino el siguiente más alto
+        return idsTickets[0];
+    }
+
+    @Override
+    public int Prioridad() {
+        return nivelesPrioridad[0];
+    }
+
+    @Override
+    public boolean ColaVacia() {
+        return cantidad == 0;
+    }
+}
 
 
