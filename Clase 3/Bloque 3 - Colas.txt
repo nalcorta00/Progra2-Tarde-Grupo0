@@ -136,6 +136,74 @@ public class GuardiaHospital implements ColaPrioridadTDA {
 Examen Final
 Se presenta una cola con prioridad donde los alumnos promocionados tienen precedencia sobre aquellos en condición de examen final. No obstante, se aplica una regla de puntualidad: si un alumno promocionado llega con 30 minutos de demora, pierde su beneficio jerárquico y es desencolado después de los estudiantes que se presentaron puntualmente, independientemente de su condición.
 
+package Implementacion;
+
+import Interfaces.ColaPrioridadTDA;
+
+public class GestionExamen implements ColaPrioridadTDA {
+
+    private static final int MAX = 100;
+    private int[] alumnos;      // Almacena el ID del alumno
+    private int[] prioridades;  // Almacena 10 (Promocionado) o 5 (Regular)
+    private int cantidad;
+
+    @Override
+    public void InicializarCola() {
+        alumnos = new int[MAX];
+        prioridades = new int[MAX];
+        cantidad = 0;
+    }
+
+    @Override
+    public void EncolarPrioridad(int idAlumno, int prioridad) {
+        if (cantidad < MAX) {
+            int j = cantidad;
+
+            // Lógica de Desplazamiento:
+            // Mientras el que está a la izquierda tenga MENOR prioridad que el nuevo,
+            // lo movemos a la derecha para dejarle el lugar al más importante.
+            while (j > 0 && prioridades[j - 1] < prioridad) {
+                prioridades[j] = prioridades[j - 1];
+                alumnos[j] = alumnos[j - 1];
+                j--;
+            }
+
+            // El alumno promocionado (10) "salta" al regular (5) y queda más cerca del índice 0
+            alumnos[j] = idAlumno;
+            prioridades[j] = prioridad;
+            cantidad++;
+        }
+    }
+
+    @Override
+    public void Desencolar() {
+        if (!ColaVacia()) {
+            // Estrategia 2: Al sacar al primero (indice 0), 
+            // todos los demás avanzan un casillero a la izquierda.
+            for (int i = 0; i < cantidad - 1; i++) {
+                alumnos[i] = alumnos[i + 1];
+                prioridades[i] = prioridades[i + 1];
+            }
+            cantidad--;
+        }
+    }
+
+    @Override
+    public int Primero() {
+        return alumnos[0]; // Siempre devuelve el que tiene mayor prioridad
+    }
+
+    @Override
+    public int Prioridad() {
+        return prioridades[0];
+    }
+
+    @Override
+    public boolean ColaVacia() {
+        return cantidad == 0;
+    }
+}
+
 Buffet Facultad
 Para asegurar que nadie se cuele, se utiliza la operación encolar (enqueue). Debido a la naturaleza del TDA Cola, el acceso está restringido: los nuevos elementos solo pueden ingresar por el final de la estructura, respetando estrictamente el orden de llegada (FIFO).
 
